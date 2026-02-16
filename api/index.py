@@ -1,4 +1,6 @@
 from api.app import app
 
-def handler(request):
-    return app(request.environ, lambda *args: None)
+# Vercel expects the Flask app to be available as 'app'
+# This file serves as the entry point for Vercel
+if __name__ == "__main__":
+    app.run()

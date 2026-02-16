@@ -12,6 +12,14 @@ app = Flask(__name__,
            template_folder="../templates",
            static_folder="../static")
 
+# Add CORS headers for Vercel
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+    return response
+
 # --------------- Load saved model artifacts ---------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -265,10 +273,6 @@ def predict():
 @app.route("/about")
 def about():
     return render_template("about.html")
-
-# Vercel serverless handler
-def handler(request):
-    return app(request.environ, lambda *args: None)
 
 if __name__ == "__main__":
     app.run(debug=True)
