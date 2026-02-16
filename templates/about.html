@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About — Poverty Prediction Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <span class="nav-icon">📊</span> Poverty Predictor
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Predict</a>
+                <a href="/about" class="nav-link active">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content about-page">
+        <div class="container">
+            <div class="about-hero">
+                <h1>About This Project</h1>
+                <p class="about-subtitle">
+                    An ML-powered tool to estimate household poverty levels from survey data.
+                </p>
+            </div>
+
+            <div class="about-grid">
+                <div class="about-card">
+                    <h2>📋 Overview</h2>
+                    <p>
+                        This tool uses an <strong>XGBoost regression model</strong> trained on
+                        household survey data to predict per-capita daily utility expenditure
+                        (in PPP dollars). The prediction is then mapped to internationally
+                        recognised poverty thresholds set by the World Bank.
+                    </p>
+                </div>
+
+                <div class="about-card">
+                    <h2>🔬 Methodology</h2>
+                    <ul>
+                        <li><strong>Data Cleaning:</strong> KNN imputation for numeric columns; mode imputation for categorical columns.</li>
+                        <li><strong>Feature Engineering:</strong> Categorical features encoded to numeric codes; outlier removal via IQR method.</li>
+                        <li><strong>Scaling:</strong> StandardScaler applied to all features.</li>
+                        <li><strong>Model:</strong> XGBoost Regressor with 1 000 estimators, RMSE evaluation metric, and early stopping (50 rounds).</li>
+                    </ul>
+                </div>
+
+                <div class="about-card">
+                    <h2>📊 Features Used</h2>
+                    <div class="feature-tags">
+                        <span class="tag">Gender</span>
+                        <span class="tag">Ownership</span>
+                        <span class="tag">Urban / Rural</span>
+                        <span class="tag">Water Access</span>
+                        <span class="tag">Toilet Access</span>
+                        <span class="tag">Sewer</span>
+                        <span class="tag">Electricity</span>
+                        <span class="tag">Water Source</span>
+                        <span class="tag">Sanitation</span>
+                        <span class="tag">Dwelling Type</span>
+                        <span class="tag">Employment</span>
+                        <span class="tag">Education</span>
+                        <span class="tag">Non-Agric Income</span>
+                        <span class="tag">Sector</span>
+                        <span class="tag">Household Size</span>
+                        <span class="tag">Rooms</span>
+                        <span class="tag">Age</span>
+                        <span class="tag">Consumption Units</span>
+                    </div>
+                </div>
+
+                <div class="about-card">
+                    <h2>🌍 Poverty Thresholds</h2>
+                    <table class="about-table">
+                        <thead>
+                            <tr><th>Level</th><th>Threshold</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>🔴 Extreme Poverty</td><td>&lt; $2.15 / day PPP</td></tr>
+                            <tr><td>🟠 Moderate Poverty</td><td>&lt; $3.65 / day PPP</td></tr>
+                            <tr><td>🟡 Vulnerable</td><td>&lt; $6.85 / day PPP</td></tr>
+                            <tr><td>🔵 Near Average</td><td>&lt; $15 / day PPP</td></tr>
+                            <tr><td>🟢 Above Average</td><td>&ge; $15 / day PPP</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="about-card">
+                    <h2>🛠 Tech Stack</h2>
+                    <ul>
+                        <li><strong>Backend:</strong> Python, Flask</li>
+                        <li><strong>ML:</strong> XGBoost, scikit-learn</li>
+                        <li><strong>Frontend:</strong> HTML5, CSS3, Vanilla JS</li>
+                    </ul>
+                </div>
+
+                <div class="about-card">
+                    <h2>📝 How to Use</h2>
+                    <ol>
+                        <li>Train the model: <code>python povertyprecition.py</code></li>
+                        <li>Start the website: <code>python app.py</code></li>
+                        <li>Open <a href="http://127.0.0.1:5000">http://127.0.0.1:5000</a></li>
+                        <li>Fill in the household form and click <strong>Predict</strong>.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="back-link">
+                <a href="/" class="btn btn-primary">← Back to Prediction</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Poverty Prediction Tool &mdash; Built with Flask &amp; XGBoost</p>
+    </footer>
+</body>
+</html>

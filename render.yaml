@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: poverty-prediction-app
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.18
+      - key: PIP_NO_CACHE_DIR  
+        value: 1

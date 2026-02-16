@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+*.log
+.DS_Store
+README.md
+.git/
+povertyprecition.py
+train_hh_features.csv
+*.png
+poverty-prediction-app.zip
+.vercel/
+boxplots_*.png
+prediction_analysis.png
