@@ -9,8 +9,19 @@ app = Flask(__name__)
 # --------------- Load saved model artifacts ---------------
 MODEL_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Global variables for caching
+_xgb_model = None
+_scaler = None
+_feature_meta = None
+_models_loaded = False
+
 def load_model():
     """Load the trained XGBoost model, scaler, and feature metadata."""
+    global _xgb_model, _scaler, _feature_meta, _models_loaded
+    
+    if _models_loaded:
+        return _xgb_model, _scaler, _feature_meta
+    
     model_path = os.path.join(MODEL_DIR, "xgb_poverty_model.pkl")
     scaler_path = os.path.join(MODEL_DIR, "scaler.pkl")
     meta_path = os.path.join(MODEL_DIR, "feature_meta.pkl")
@@ -21,19 +32,27 @@ def load_model():
             "to train the model and generate the .pkl files."
         )
 
-    model = joblib.load(model_path)
-    scaler = joblib.load(scaler_path)
-    meta = joblib.load(meta_path)  # dict with feature_names, feature_defaults
-    return model, scaler, meta
+    print("Loading XGBoost model... (this may take a moment on first load)")
+    try:
+        _xgb_model = joblib.load(model_path)
+        _scaler = joblib.load(scaler_path)
+        _feature_meta = joblib.load(meta_path)  # dict with feature_names, feature_defaults
+        _models_loaded = True
+        print("✅ Model loaded successfully!")
+        return _xgb_model, _scaler, _feature_meta
+    except Exception as e:
+        print(f"❌ Error loading model: {e}")
+        raise
 
+def get_models():
+    """Get models with lazy loading."""
+    if not _models_loaded:
+        return load_model()
+    return _xgb_model, _scaler, _feature_meta
 
-try:
-    xgb_model, scaler, feature_meta = load_model()
-    MODEL_LOADED = True
-except FileNotFoundError as e:
-    print(f"⚠  {e}")
-    xgb_model, scaler, feature_meta = None, None, None
-    MODEL_LOADED = False
+# Check if model files exist at startup but don't load them yet
+MODEL_FILES_EXIST = all(os.path.exists(os.path.join(MODEL_DIR, f)) 
+                       for f in ["xgb_poverty_model.pkl", "scaler.pkl", "feature_meta.pkl"])
 
 # --------------- Feature definitions for the form ---------------
 # These are the human-readable input fields shown on the website.
@@ -205,7 +224,7 @@ FORM_FIELDS = [
 ]
 
 
-def build_feature_vector(form_data: dict) -> np.ndarray:
+def build_feature_vector(form_data: dict, feature_meta: dict) -> np.ndarray:
     """
     Convert the form inputs into a feature vector that matches
     exactly what the trained model expects (same column order & count).
@@ -244,17 +263,20 @@ def classify_poverty(expenditure: float) -> dict:
 
 @app.route("/")
 def index():
-    return render_template("index.html", fields=FORM_FIELDS, model_loaded=MODEL_LOADED)
+    return render_template("index.html", fields=FORM_FIELDS, model_loaded=MODEL_FILES_EXIST)
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    if not MODEL_LOADED:
-        return jsonify({"error": "Model not loaded. Train the model first."}), 503
+    if not MODEL_FILES_EXIST:
+        return jsonify({"error": "Model files not found. Train the model first."}), 503
 
     try:
+        # Load models on-demand
+        xgb_model, scaler, feature_meta = get_models()
+        
         form_data = request.get_json()
-        features = build_feature_vector(form_data)
+        features = build_feature_vector(form_data, feature_meta)
         features_scaled = scaler.transform(features)
         prediction = float(xgb_model.predict(features_scaled)[0])
         classification = classify_poverty(prediction)
@@ -275,11 +297,11 @@ def about():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print("\n" + "=" * 60)
-    if MODEL_LOADED:
-        print("  ✅  Model loaded successfully!")
-        print(f"  Features expected: {len(feature_meta['feature_names'])}")
+    if MODEL_FILES_EXIST:
+        print("  ✅  Model files found! (will load on first prediction)")
+        print("  📁  Ready to serve predictions")
     else:
-        print("  ⚠  Model NOT loaded — run povertyprecition.py first")
+        print("  ⚠  Model files NOT found — run povertyprecition.py first")
     print(f"  🌐  Starting server on port {port}")
     print("=" * 60 + "\n")
     app.run(host="0.0.0.0", port=port, debug=False)
